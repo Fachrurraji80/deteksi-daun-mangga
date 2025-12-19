@@ -53,9 +53,9 @@ model = load_cnn_model()
 # PREPROCESSING (SAMA DENGAN TRAINING)
 # =========================
 def preprocess_image(image):
-    image = cv2.resize(image, (IMG_SIZE, IMG_SIZE))
-    image = image / 255.0
-    image = np.expand_dims(image, axis=0)
+    image = cv2.resize(image, (224, 224))
+    image = image.astype("float32") / 255.0
+    image = np.expand_dims(image, axis=0)  # <-- WAJIB (batch)
     return image
 
 # =========================
@@ -86,6 +86,8 @@ if uploaded_file is not None:
 
     if st.button("🔍 Deteksi Penyakit"):
         processed_image = preprocess_image(image_np)
+        
+        st.write("Input shape:", processed_image.shape)
 
         prediction = model.predict(processed_image)
         class_index = np.argmax(prediction)
