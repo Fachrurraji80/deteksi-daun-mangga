@@ -42,7 +42,7 @@ CLASS_NAMES = [
 # =========================
 # LOAD MODEL
 # =========================
-@st.cache_resource
+
 def load_cnn_model():
     return load_model(MODEL_PATH)
 
