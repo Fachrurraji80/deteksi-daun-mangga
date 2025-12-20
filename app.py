@@ -8,10 +8,8 @@ Original file is located at
 """
 
 import streamlit as st
-
 import os
 import urllib.request
-
 import numpy as np
 import cv2
 from PIL import Image
@@ -24,38 +22,39 @@ if not os.path.exists(MODEL_PATH):
     with st.spinner("Mengunduh model CNN..."):
         urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
 
-
 # =========================
 # KONFIGURASI
 # =========================
 IMG_SIZE = 224
 
+# ⚠️ HARUS 8 KELAS & URUTANNYA SESUAI train_gen.class_indices
 CLASS_NAMES = [
     "Anthracnose",
     "Bacterial Canker",
     "Die Back",
-    "Cutting Weevil",
     "Powdery Mildew",
-    "Healthy"
+    "Healthy",
+    "Leaf Spot",
+    "Sooty Mold",
+    "Cutting Weevil"
 ]
 
 # =========================
 # LOAD MODEL
 # =========================
-
+@st.cache_resource
 def load_cnn_model():
     return load_model(MODEL_PATH)
 
 model = load_cnn_model()
 
-
 # =========================
 # PREPROCESSING (SAMA DENGAN TRAINING)
 # =========================
 def preprocess_image(image):
-    image = cv2.resize(image, (224, 224))
-    image = image.astype("float32") / 255.0
-    image = np.expand_dims(image, axis=0)  # <-- WAJIB (batch)
+    image = cv2.resize(image, (IMG_SIZE, IMG_SIZE))
+    image = image.astype("float32")   # ❗ JANGAN /255
+    image = np.expand_dims(image, axis=0)
     return image
 
 # =========================
@@ -92,11 +91,17 @@ if uploaded_file is not None:
         prediction = model.predict(processed_image)
 
         st.write("Raw model prediction:", prediction)
-        
+
         class_index = np.argmax(prediction)
-        confidence = np.max(prediction)
+        confidence = prediction[0][class_index]
 
         st.subheader("✅ Hasil Deteksi")
         st.success(f"**Penyakit:** {CLASS_NAMES[class_index]}")
         st.info(f"**Tingkat Kepercayaan:** {confidence * 100:.2f}%")
+
+        # 🔎 tampilkan semua probabilitas (opsional tapi DISARANKAN)
+        st.subheader("📊 Probabilitas Semua Kelas")
+        for i, prob in enumerate(prediction[0]):
+            st.write(f"{CLASS_NAMES[i]}: {prob*100:.2f}%")
+
 
