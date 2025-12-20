@@ -31,12 +31,12 @@ IMG_SIZE = 224
 CLASS_NAMES = [
     "Anthracnose",
     "Bacterial Canker",
+    "Cutting Weevil",
     "Die Back",
-    "Powdery Mildew",
+    "Gall Midge",
     "Healthy",
-    "Leaf Spot",
-    "Sooty Mold",
-    "Cutting Weevil"
+    "Powdery Mildew",
+    "Sooty Mould"
 ]
 
 # =========================
@@ -53,7 +53,7 @@ model = load_cnn_model()
 # =========================
 def preprocess_image(image):
     image = cv2.resize(image, (IMG_SIZE, IMG_SIZE))
-    image = image.astype("float32")   # ❗ JANGAN /255
+    image = image.astype("float32") / 255.0
     image = np.expand_dims(image, axis=0)
     return image
 
@@ -103,5 +103,6 @@ if uploaded_file is not None:
         st.subheader("📊 Probabilitas Semua Kelas")
         for i, prob in enumerate(prediction[0]):
             st.write(f"{CLASS_NAMES[i]}: {prob*100:.2f}%")
+
 
 
