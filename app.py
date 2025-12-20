@@ -86,13 +86,17 @@ if uploaded_file is not None:
 
     if st.button("🔍 Deteksi Penyakit"):
         processed_image = preprocess_image(image_np)
-        
+
         st.write("Input shape:", processed_image.shape)
 
         prediction = model.predict(processed_image)
+
+        st.write("Raw model prediction:", prediction)
+        
         class_index = np.argmax(prediction)
         confidence = np.max(prediction)
 
         st.subheader("✅ Hasil Deteksi")
         st.success(f"**Penyakit:** {CLASS_NAMES[class_index]}")
         st.info(f"**Tingkat Kepercayaan:** {confidence * 100:.2f}%")
+
