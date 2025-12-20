@@ -14,6 +14,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from tensorflow.keras.models import load_model
+from tensorflow.keras.applications.efficientnet import preprocess_input
 
 MODEL_URL = "https://github.com/Fachrurraji80/deteksi-daun-mangga/releases/download/v1.0/model.keras"
 MODEL_PATH = "model.keras"
@@ -27,7 +28,7 @@ if not os.path.exists(MODEL_PATH):
 # =========================
 IMG_SIZE = 224
 
-# ⚠️ HARUS 8 KELAS & URUTANNYA SESUAI train_gen.class_indices
+# ⚠️ HARUS SESUAI train_gen.class_indices
 CLASS_NAMES = [
     "Anthracnose",
     "Bacterial Canker",
@@ -49,11 +50,12 @@ def load_cnn_model():
 model = load_cnn_model()
 
 # =========================
-# PREPROCESSING (SAMA DENGAN TRAINING)
+# PREPROCESSING (WAJIB SAMA DENGAN TRAINING)
 # =========================
 def preprocess_image(image):
     image = cv2.resize(image, (IMG_SIZE, IMG_SIZE))
-    image = image.astype("float32") / 255.0
+    image = image.astype("float32")
+    image = preprocess_input(image)   # 🔥 INI KUNCI UTAMA
     image = np.expand_dims(image, axis=0)
     return image
 
@@ -67,7 +69,7 @@ st.set_page_config(
 
 st.title("🌿 Deteksi Penyakit Daun Mangga")
 st.write(
-    "Aplikasi ini menggunakan **Convolutional Neural Network (CNN – EfficientNetB0)** "
+    "Aplikasi ini menggunakan **CNN (EfficientNetB0)** "
     "untuk mendeteksi penyakit pada daun mangga."
 )
 
@@ -92,17 +94,14 @@ if uploaded_file is not None:
 
         st.write("Raw model prediction:", prediction)
 
-        class_index = np.argmax(prediction)
+        class_index = np.argmax(prediction[0])
         confidence = prediction[0][class_index]
 
         st.subheader("✅ Hasil Deteksi")
         st.success(f"**Penyakit:** {CLASS_NAMES[class_index]}")
         st.info(f"**Tingkat Kepercayaan:** {confidence * 100:.2f}%")
 
-        # 🔎 tampilkan semua probabilitas (opsional tapi DISARANKAN)
         st.subheader("📊 Probabilitas Semua Kelas")
         for i, prob in enumerate(prediction[0]):
-            st.write(f"{CLASS_NAMES[i]}: {prob*100:.2f}%")
-
-
+            st.write(f"{CLASS_NAMES[i]}: {prob * 100:.2f}%")
 
